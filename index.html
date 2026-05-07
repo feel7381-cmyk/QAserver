@@ -5,16 +5,20 @@
   <title>Bubble Date Finder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* 수정 4: 전체 페이지 배경색을 #fdfdfd로 변경 */
     body {
       margin: 0;
       font-family: 'Pretendard', sans-serif;
-      background: #f5f5f5;
+      background: #fdfdfd; 
     }
 
     .container {
       padding: 16px;
       max-width: 420px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 90vh; /* 내용을 하단으로 밀기 위한 설정 */
     }
 
     .header {
@@ -67,7 +71,6 @@
       font-weight: bold;
     }
 
-    /* 수정 1: 멤버 선택 탭 배경색을 로고와 동일한 그라데이션으로 변경 */
     .members {
       background: linear-gradient(135deg, #C88DDD, #9CEAFE);
       border-radius: 30px;
@@ -77,7 +80,7 @@
       margin-bottom: 16px;
     }
 
-    /* 수정 2: 멤버 이름 폰트를 검정색으로 지정 */
+    /* 수정 2: 멤버 이름 폰트를 흰색으로 지정 */
     .members button {
       flex: 1;
       border: none;
@@ -86,16 +89,15 @@
       border-radius: 20px;
       cursor: pointer;
       font-size: 14px;
-      color: black; 
+      color: white; 
       transition: 0.3s;
     }
 
-    /* 수정 3: 활성화 효과를 유리 느낌(글래스모피즘)으로 변경 */
     .members .active {
-      background: rgba(255, 255, 255, 0.4); /* 반투명한 흰색 배경 */
-      backdrop-filter: blur(4px); /* 배경 블러 처리 */
-      -webkit-backdrop-filter: blur(4px); /* 사파리 호환 */
-      border: 1px solid rgba(255, 255, 255, 0.5); /* 은은한 테두리 */
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       font-weight: bold;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
@@ -118,14 +120,14 @@
       margin-right: 5px;
     }
 
-    /* 수정 4: 모바일 달력 클릭 오류 방지를 위해 위치와 클릭 이벤트 제어 추가 */
+    /* 수정 1: 달력 클릭 오류 수정. 화면에서 숨기되 상호작용 가능하도록 변경 */
     #hiddenDateInput {
       position: absolute;
-      left: -9999px; /* 화면 밖으로 완전히 밀어내어 간섭 방지 */
       opacity: 0;
       width: 0;
       height: 0;
-      pointer-events: none; /* 의도치 않은 터치 방지 */
+      border: none;
+      z-index: -1;
     }
 
     .search-box select {
@@ -144,7 +146,6 @@
       font-size: 14px;
     }
 
-    /* 수정 7: 검색 버튼 스타일 변경 (그라데이션 배경, 흰색 폰트) */
     .search-btn {
       background: linear-gradient(135deg, #C88DDD, #9CEAFE);
       color: white;
@@ -166,13 +167,35 @@
       margin-bottom: 24px;
       min-height: 40px;
       font-size: 18px;
+      cursor: pointer; /* 클릭 가능한 요소임을 표시 */
+      user-select: text;
     }
 
-    /* 수정 5: 사진 출력 관련 CSS (.image-text) 삭제 */
+    /* 수정 6: 사용방법 안내문 스타일 */
+    .instructions {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
 
+    .instructions strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #000;
+    }
+
+    /* 수정 6: 하단 Support 위치 조정 */
     .footer {
       border-top: 1px solid #ccc;
       padding-top: 20px;
+      margin-top: auto; /* 내용물이 적어도 컨테이너 제일 하단으로 밀어냄 */
+      text-align: center;
     }
 
     .support-link {
@@ -195,10 +218,10 @@
   </div>
 
   <div class="members">
-    <button onclick="selectMember(this)" class="active" data-en="Karina" data-ko="카리나">Karina</button>
-    <button onclick="selectMember(this)" data-en="Giselle" data-ko="지젤">Giselle</button>
-    <button onclick="selectMember(this)" data-en="Winter" data-ko="윈터">Winter</button>
-    <button onclick="selectMember(this)" data-en="Ningning" data-ko="닝닝">Ningning</button>
+    <button onclick="selectMember(this)" class="active" data-sheet="Karina" data-en="Karina 🤍" data-ko="카리나 🤍">Karina 🤍</button>
+    <button onclick="selectMember(this)" data-sheet="Giselle" data-en="Giselle 🌙" data-ko="지젤 🌙">Giselle 🌙</button>
+    <button onclick="selectMember(this)" data-sheet="Winter" data-en="Winter ⭐" data-ko="윈터 ⭐">Winter ⭐</button>
+    <button onclick="selectMember(this)" data-sheet="Ningning" data-en="Ningning 🦋" data-ko="닝닝 🦋">Ningning 🦋</button>
   </div>
 
   <div class="search-box">
@@ -216,6 +239,14 @@
 
   <div class="result" id="resultBox">Select a date and press search.</div>
   
+  <div class="instructions" id="instructionsBox">
+    <strong>&lt;How to Use&gt;</strong>
+    1. Select a member and date, then press search.<br>
+    2. Long-press or double-click the searched text to copy.<br>
+    3. Paste the text into the Bubble search bar and search.<br>
+    + Report errors via the support link below.
+  </div>
+
   <div class="footer">
     <a href="https://x.com/aespaBBfinder" target="_blank" class="support-link">Support</a>
   </div>
@@ -267,17 +298,39 @@ function toggleLang() {
   const searchBtn = document.getElementById("searchBtn");
   const memberButtons = document.querySelectorAll(".members button");
   const resultBox = document.getElementById("resultBox");
+  const instructionsBox = document.getElementById("instructionsBox");
 
   if (currentLang === "KO") {
     titleText.innerText = "에스파 버블 날짜 검색기";
     searchBtn.innerText = "검색";
     memberButtons.forEach(btn => btn.innerText = btn.getAttribute("data-ko"));
+    
     if(resultBox.innerText.includes("Select a date")) resultBox.innerText = "날짜를 선택하고 검색을 누르세요.";
+    
+    // 수정 6: 한글 사용방법으로 변경
+    instructionsBox.innerHTML = `
+      <strong>&lt;사용방법&gt;</strong>
+      1. 원하는 멤버와 날짜를 선택한 후 검색 버튼을 누르기<br>
+      2. 검색된 단어나 문장을 꾹 누르거나 더블클릭하여 복사하기<br>
+      3. 버블 검색창에 해당 단어나 문장을 붙여넣기 한 후 검색하기<br>
+      + 오류 신고는 하단 support 링크로 들어가 제보하기
+    `;
+
   } else {
     titleText.innerText = "aespa bubble date finder";
     searchBtn.innerText = "search";
     memberButtons.forEach(btn => btn.innerText = btn.getAttribute("data-en"));
+    
     if(resultBox.innerText.includes("날짜를 선택하고")) resultBox.innerText = "Select a date and press search.";
+    
+    // 수정 6: 영어 사용방법으로 변경
+    instructionsBox.innerHTML = `
+      <strong>&lt;How to Use&gt;</strong>
+      1. Select a member and date, then press search.<br>
+      2. Long-press or double-click the searched text to copy.<br>
+      3. Paste the text into the Bubble search bar and search.<br>
+      + Report errors via the support link below.
+    `;
   }
 }
 
@@ -293,9 +346,9 @@ async function search() {
   const selectedDate = `${y}-${m}-${d}`;
   
   const resultBox = document.getElementById("resultBox");
-  // 수정 5: imageOutput 변수 및 관련 로직 삭제
   
-  const activeMember = document.querySelector(".members .active").getAttribute("data-en");
+  // 수정 3: 이모티콘이 포함된 이름이 아닌 시트 이름(Karina, Giselle 등)만 가져옴
+  const activeMember = document.querySelector(".members .active").getAttribute("data-sheet");
   
   resultBox.innerText = currentLang === "KO" ? "데이터를 불러오는 중..." : "Loading data...";
   
@@ -337,6 +390,56 @@ async function search() {
     resultBox.innerText = currentLang === "KO" ? "데이터를 불러오는 데 실패했습니다." : "Failed to load data.";
   }
 }
+
+/* =========================================
+   수정 5: 결과 텍스트 복사 기능 추가
+   모바일: 꾹 누르기(Long Press) / PC: 더블 클릭
+========================================= */
+const resultBox = document.getElementById("resultBox");
+let pressTimer;
+
+// 복사 함수
+async function copyToClipboard() {
+  const text = resultBox.innerText;
+  const excludeTexts = [
+    "Select a date and press search.", 
+    "날짜를 선택하고 검색을 누르세요.", 
+    "Loading data...", 
+    "데이터를 불러오는 중...", 
+    "Bubble not found", 
+    "버블이 검색되지 않음", 
+    "Failed to load data.", 
+    "데이터를 불러오는 데 실패했습니다."
+  ];
+  
+  // 오류 메시지나 기본 안내 문구가 아닐 때만 복사 실행
+  if(text && !excludeTexts.includes(text)) {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert(currentLang === "KO" ? "텍스트가 복사되었습니다." : "Text copied to clipboard.");
+    } catch (err) {
+      console.error('Failed to copy!', err);
+    }
+  }
+}
+
+// PC: 더블클릭 이벤트
+resultBox.addEventListener('dblclick', copyToClipboard);
+
+// 모바일: 꾹 누르기 (Touch 이벤트)
+resultBox.addEventListener('touchstart', (e) => {
+  pressTimer = setTimeout(() => {
+    copyToClipboard();
+  }, 700); // 0.7초 동안 누르고 있으면 복사
+});
+
+resultBox.addEventListener('touchend', () => {
+  clearTimeout(pressTimer); // 손을 떼면 타이머 취소
+});
+
+resultBox.addEventListener('touchmove', () => {
+  clearTimeout(pressTimer); // 누른 상태로 움직이면(스크롤 등) 타이머 취소
+});
 </script>
 
 </body>
