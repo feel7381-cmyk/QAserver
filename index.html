@@ -4,8 +4,19 @@
   <meta charset="UTF-8" />
   <title>Bubble Date Finder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+
+  <link rel="apple-touch-icon" href="./apple-icon-180x180.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="aespa bubble date finder">
+  <meta property="og:description" content="에스파 버블 날짜 검색기 - 원하는 날짜의 버블을 찾아보세요!">
+  
+  <meta property="og:url" content="https://aespabbfinder.github.io/DateFinder">
+  <meta property="og:image" content="https://aespabbfinder.github.io/DateFinder/앱1.jpg">
   <style>
-    /* 수정 4: 전체 페이지 배경색을 #fdfdfd로 변경 */
+    /* 전체 페이지 배경색을 #fdfdfd로 변경 */
     body {
       margin: 0;
       font-family: 'Pretendard', sans-serif;
@@ -80,7 +91,7 @@
       margin-bottom: 16px;
     }
 
-    /* 수정 2: 멤버 이름 폰트를 흰색으로 지정 */
+    /* 멤버 이름 폰트를 흰색으로 지정 */
     .members button {
       flex: 1;
       border: none;
@@ -120,7 +131,7 @@
       margin-right: 5px;
     }
 
-    /* 수정 1: 달력 클릭 오류 수정. 화면에서 숨기되 상호작용 가능하도록 변경 */
+    /* 달력 클릭 오류 수정. 화면에서 숨기되 상호작용 가능하도록 변경 */
     #hiddenDateInput {
       position: absolute;
       opacity: 0;
@@ -171,7 +182,46 @@
       user-select: text;
     }
 
-    /* 수정 6: 사용방법 안내문 스타일 */
+    /* 검색 결과 없음 시 적용되는 새로운 스타일 */
+    .not-found-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .nav-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      color: #888; /* 회색 설정 */
+      padding: 0 10px;
+      user-select: none;
+    }
+
+    .nav-arrow:active {
+      opacity: 0.6;
+    }
+
+    .arrow-head {
+      font-size: 24px;
+      line-height: 1;
+      font-weight: bold;
+    }
+
+    .arrow-date {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .not-found-msg {
+      flex: 1;
+      text-align: center;
+      color: #000;
+    }
+
+    /* 사용방법 안내문 스타일 */
     .instructions {
       background: #f9f9f9;
       border: 1px solid #eee;
@@ -190,7 +240,7 @@
       color: #000;
     }
 
-    /* 수정 6: 하단 Support 위치 조정 */
+    /* 하단 Support 위치 조정 */
     .footer {
       border-top: 1px solid #ccc;
       padding-top: 20px;
@@ -248,7 +298,7 @@
   </div>
 
   <div class="footer">
-    <a href="https://x.com/aespaBBfinder" target="_blank" class="support-link">Support</a>
+    <a href="https://x.com/aespaBBLfinder" target="_blank" class="support-link">Support</a>
   </div>
 </div>
 
@@ -307,7 +357,7 @@ function toggleLang() {
     
     if(resultBox.innerText.includes("Select a date")) resultBox.innerText = "날짜를 선택하고 검색을 누르세요.";
     
-    // 수정 6: 한글 사용방법으로 변경
+    // 한글 사용방법으로 변경
     instructionsBox.innerHTML = `
       <strong>&lt;사용방법&gt;</strong>
       1. 원하는 멤버와 날짜를 선택한 후 검색 버튼을 누르기<br>
@@ -323,7 +373,7 @@ function toggleLang() {
     
     if(resultBox.innerText.includes("날짜를 선택하고")) resultBox.innerText = "Select a date and press search.";
     
-    // 수정 6: 영어 사용방법으로 변경
+    // 영어 사용방법으로 변경
     instructionsBox.innerHTML = `
       <strong>&lt;How to Use&gt;</strong>
       1. Select a member and date, then press search.<br>
@@ -347,7 +397,7 @@ async function search() {
   
   const resultBox = document.getElementById("resultBox");
   
-  // 수정 3: 이모티콘이 포함된 이름이 아닌 시트 이름(Karina, Giselle 등)만 가져옴
+  // 이모티콘이 포함된 이름이 아닌 시트 이름(Karina, Giselle 등)만 가져옴
   const activeMember = document.querySelector(".members .active").getAttribute("data-sheet");
   
   resultBox.innerText = currentLang === "KO" ? "데이터를 불러오는 중..." : "Loading data...";
@@ -377,12 +427,12 @@ async function search() {
       const colAValue = matchedRow[colAKey];
       
       if (!colAValue || String(colAValue).trim() === "") {
-        resultBox.innerText = notFoundText;
+        renderNotFound(data, colBKey, colAKey, selectedDate, notFoundText);
       } else {
         resultBox.innerText = colAValue;
       }
     } else {
-      resultBox.innerText = notFoundText;
+      renderNotFound(data, colBKey, colAKey, selectedDate, notFoundText);
     }
 
   } catch (error) {
@@ -391,8 +441,76 @@ async function search() {
   }
 }
 
+// 결과 없음 렌더링 함수 (전후 날짜 화살표 표시)
+function renderNotFound(data, colBKey, colAKey, selectedDate, notFoundText) {
+  let prevDate = null;
+  let nextDate = null;
+
+  // 문자열 비교를 통해 가장 가까운 날짜 탐색 (YYYY-MM-DD 형식의 장점 활용)
+  data.forEach(row => {
+    const sheetDate = String(row[colBKey] || "").trim();
+    const content = String(row[colAKey] || "").trim();
+    
+    if (sheetDate.length === 10 && content !== "") { 
+      if (sheetDate < selectedDate) {
+        if (!prevDate || sheetDate > prevDate) {
+          prevDate = sheetDate;
+        }
+      } else if (sheetDate > selectedDate) {
+        if (!nextDate || sheetDate < nextDate) {
+          nextDate = sheetDate;
+        }
+      }
+    }
+  });
+
+  let html = `<div class="not-found-container">`;
+  
+  // 이전 화살표
+  if (prevDate) {
+    html += `<div class="nav-arrow" onclick="jumpToDate('${prevDate}')">
+               <div class="arrow-head">❮</div>
+               <div class="arrow-date">${prevDate}</div>
+             </div>`;
+  } else {
+    html += `<div class="nav-arrow" style="visibility:hidden;">
+               <div class="arrow-head">❮</div>
+               <div class="arrow-date">0000-00-00</div>
+             </div>`;
+  }
+
+  // 안내 문구
+  html += `<div class="not-found-msg">${notFoundText}</div>`;
+
+  // 이후 화살표
+  if (nextDate) {
+    html += `<div class="nav-arrow" onclick="jumpToDate('${nextDate}')">
+               <div class="arrow-head">❯</div>
+               <div class="arrow-date">${nextDate}</div>
+             </div>`;
+  } else {
+    html += `<div class="nav-arrow" style="visibility:hidden;">
+               <div class="arrow-head">❯</div>
+               <div class="arrow-date">0000-00-00</div>
+             </div>`;
+  }
+
+  html += `</div>`;
+  document.getElementById("resultBox").innerHTML = html;
+}
+
+// 화살표 클릭 시 해당 날짜로 바로 검색
+function jumpToDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  document.getElementById("yearSelect").value = y;
+  document.getElementById("monthSelect").value = m;
+  document.getElementById("daySelect").value = d;
+  search();
+}
+
+
 /* =========================================
-   수정 5: 결과 텍스트 복사 기능 추가
+   결과 텍스트 복사 기능
    모바일: 꾹 누르기(Long Press) / PC: 더블 클릭
 ========================================= */
 const resultBox = document.getElementById("resultBox");
@@ -400,14 +518,15 @@ let pressTimer;
 
 // 복사 함수
 async function copyToClipboard() {
+  // 결과 없음 화면(화살표 UI)이 떠있을 때는 복사를 방지함
+  if (resultBox.querySelector('.not-found-container')) return;
+
   const text = resultBox.innerText;
   const excludeTexts = [
     "Select a date and press search.", 
     "날짜를 선택하고 검색을 누르세요.", 
     "Loading data...", 
     "데이터를 불러오는 중...", 
-    "Bubble not found", 
-    "버블이 검색되지 않음", 
     "Failed to load data.", 
     "데이터를 불러오는 데 실패했습니다."
   ];
@@ -424,10 +543,14 @@ async function copyToClipboard() {
 }
 
 // PC: 더블클릭 이벤트
-resultBox.addEventListener('dblclick', copyToClipboard);
+resultBox.addEventListener('dblclick', (e) => {
+  if (e.target.closest('.nav-arrow')) return; // 화살표 클릭 시에는 방지
+  copyToClipboard();
+});
 
 // 모바일: 꾹 누르기 (Touch 이벤트)
 resultBox.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.nav-arrow')) return; // 화살표 터치 시에는 타이머 시작 안함
   pressTimer = setTimeout(() => {
     copyToClipboard();
   }, 700); // 0.7초 동안 누르고 있으면 복사
